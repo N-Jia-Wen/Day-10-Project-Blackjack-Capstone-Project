@@ -1,0 +1,125 @@
+############### Blackjack House Rules #####################
+
+## The deck is unlimited in size. 
+## There are no jokers. 
+## The Jack/Queen/King all count as 10.
+## The the Ace can count as 11 or 1.
+## Use the following list as the deck of cards:
+## cards = [11, 2, 3, 4, 5, 6, 7, 8, 9, 10, 10, 10, 10]
+## The cards in the list have equal probability of being drawn.
+## Cards are not removed from the deck as they are drawn.
+## The computer is the dealer.
+
+import random
+from art import logo
+from replit import clear
+
+cards = [11, 2, 3, 4, 5, 6, 7, 8, 9, 10, 10, 10, 10]
+player = []
+computer = []
+
+def draw_card(who_is_drawing):
+  """Draws the first two cards for the player or computer depending on the input."""
+  card1 = random.choice(cards)
+  card2 = random.choice(cards)
+  who_is_drawing = [card1,card2]
+  return who_is_drawing
+
+def score():
+  """Calculates the score of both the player and computer obtained from the draw_card() function. 
+  Also automatically draws additional cards for the computer if the total score is less than 17.
+  If the computer has an ace and its score goes over 21 in the process, the ace is then treated as a 1."""
+  global player, computer, p_score, com_score
+  player = draw_card(player)
+  computer = draw_card(computer)
+  
+  p_score = sum(player)
+  com_score = sum(computer)
+  
+  while com_score < 17:
+    new_card = random.choice(cards)
+    computer.append(new_card)
+    com_score += new_card
+    if com_score > 21 and 11 in computer:
+      computer[computer.index(11)] = 1
+      com_score -= 10
+
+  
+# Uses the rules of blackjack to decide whether the player won/lost/drawed.
+def final_results():
+  """Compares the final scores fo both the player and computer and decides the winner. Gives priority to wins that are due to obtaining blackjack (i.e. a score of 21 with 2 cards)."""
+  global player, computer, p_score, com_score
+  print(f"Your final hand: {player}, final score: {p_score}.")
+  print(f"Computer's final hand: {computer}, final score: {com_score}.")
+
+  if p_score > 21 and com_score > 21:
+    print("You went over. You lose.")
+  elif p_score == com_score:
+    print("It's a draw.")
+  elif p_score == 21 and len(player) == 2:
+    print("You won with a blackjack!")
+  elif com_score == 21 and len(computer) == 2:
+    print("You lost, opponent has blackjack.")
+  elif p_score > 21:
+    print("You went over. You lose.")
+  elif com_score > 21:
+    print("Opponent went over. You win!")
+  elif p_score > com_score:
+    print("You win!")
+  elif p_score < com_score:
+    print("You lose.")
+  
+
+def blackjack():
+  """Uses all previously defined functions to carry out one or more games of blackjack depending on the user's preference."""
+  global player, computer, p_score, com_score
+  end = False
+  want_extra_card = True
+  additional_round = False
+
+  while not end and not additional_round:
+    want_to_play = input("Do you want to play a game of Blackjack? Type 'y' or 'n': ").lower()
+    if want_to_play == 'y':
+      clear()
+      print(logo)
+      score()
+      print(f"Your cards: {player}, current score: {p_score}")
+      print(f"Computer's first card: {computer[0]}")
+
+      # This checks if either the player or computer has a blackjack. If so, the game ends immediately.
+      if (p_score == 21 and len(player) == 2) or (com_score == 21 and len(computer) == 2):
+        final_results()
+        want_extra_card = False
+        
+      while want_extra_card == True:
+        extra_card = input("Press 'y' to get another card, type 'n' to pass: ").lower()
+        if extra_card == 'y':
+          new_card = random.choice(cards)
+          p_score += new_card
+          player.append(new_card)
+          if p_score > 21 and 11 in player:
+            player[player.index(11)] = 1
+            p_score -= 10
+          
+          
+          print(f"Your cards: {player}, current score: {p_score}")
+          print(f"Computer's first card: {computer[0]}")
+
+          # Prevents the player from drawing more cards if they exceed or are at 21:
+          if p_score >= 21:
+            final_results()
+            want_extra_card = False
+        else:
+          want_extra_card = False
+          final_results()
+
+      additional_round = True
+      blackjack()
+      
+    else:
+      end = True
+      
+    
+
+
+blackjack()
